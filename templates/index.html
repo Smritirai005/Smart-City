@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Urban Mobility and Smart City System</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); margin: 0; }
+        .navbar { background: rgba(255,255,255,0.95); backdrop-filter: blur(10px); box-shadow: 0 2px 20px rgba(0,0,0,0.1); }
+        .hero-section { background: linear-gradient(135deg, #0d6efd 0%, #2563eb 100%); color: white; padding: 60px 0; position: relative; overflow: hidden; }
+        .hero-section::before { content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 100" fill="white" opacity="0.1"><polygon points="0,0 1000,0 1000,100 0,80"/></svg>'); }
+        .feature-card { background: white; border-radius: 15px; padding: 30px; margin: 20px 0; box-shadow: 0 10px 30px rgba(0,0,0,0.1); transition: all 0.3s; cursor: pointer; }
+        .feature-card:hover { transform: translateY(-10px); box-shadow: 0 20px 40px rgba(0,0,0,0.15); }
+        .feature-icon { font-size: 3rem; margin-bottom: 20px; }
+        .main-card { background: white; border-radius: 20px; box-shadow: 0 15px 35px rgba(0,0,0,0.1); margin: 20px 0; }
+        .form-control { border: 2px solid #e9ecef; border-radius: 10px; padding: 15px; }
+        .form-control:focus { border-color: #0d6efd; box-shadow: 0 0 0 0.2rem rgba(13,110,253,0.25); }
+        .btn-predict { background: linear-gradient(135deg, #0d6efd 0%, #2563eb 100%); border: none; padding: 15px 50px; border-radius: 50px; font-weight: 600; transition: all 0.3s; }
+        .btn-predict:hover { transform: translateY(-3px); box-shadow: 0 10px 30px rgba(13,110,253,0.4); }
+        .result-card { border-radius: 15px; padding: 25px; margin-top: 25px; font-weight: 600; }
+        .result-safe { background: linear-gradient(135deg, #d1f2eb 0%, #a7f3d0 100%); color: #0f5132; border-left: 5px solid #198754; }
+        .result-moderate { background: linear-gradient(135deg, #fff3cd 0%, #fef3c7 100%); color: #664d03; border-left: 5px solid #ffc107; }
+        .result-high { background: linear-gradient(135deg, #f8d7da 0%, #fecaca 100%); color: #721c24; border-left: 5px solid #dc3545; }
+        .rotating-cards { perspective: 1000px; }
+        .card-container { position: relative; width: 100%; height: 200px; transform-style: preserve-3d; transition: transform 0.6s; }
+        .card-face { position: absolute; width: 100%; height: 100%; backface-visibility: hidden; border-radius: 15px; padding: 20px; display: flex; flex-direction: column; justify-content: center; }
+        .card-front { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; }
+        .card-back { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white; transform: rotateY(180deg); }
+        .card-container.flipped { transform: rotateY(180deg); }
+        .menu-item { padding: 15px 25px; margin: 5px 0; border-radius: 10px; transition: all 0.3s; cursor: pointer; }
+        .menu-item:hover { background: rgba(13,110,253,0.1); }
+        .menu-item.active { background: linear-gradient(135deg, #0d6efd 0%, #2563eb 100%); color: white; }
+        .header-image { width: 80px; height: 80px; border-radius: 50%; object-fit: cover; margin-right: 20px; }
+        .sidebar { background: rgba(255,255,255,0.95); backdrop-filter: blur(10px); border-radius: 20px; margin: 20px; }
+    </style>
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav class="navbar navbar-light sticky-top">
+        <div class="container-fluid">
+            <div class="navbar-brand mx-auto text-center">
+                <h4 class="mb-0 text-dark fw-bold">SURVEX - Urban Mobility and Smart City System</h4>
+                <small class="text-muted">Sri Eshwar College of Engineering</small>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <div class="hero-section text-center">
+        <div class="container">
+            <h1 class="display-4 fw-bold mb-4">SURVEX - Smart City AI Platform</h1>
+            <p class="lead mb-5">Advanced Machine Learning Models for Urban Intelligence</p>
+            <div class="row justify-content-center">
+                <div class="col-md-8">
+                    <div class="rotating-cards">
+                        <div class="card-container" id="rotatingCard">
+                            <div class="card-face card-front">
+                                <h5>🤖 AI-Powered Predictions</h5>
+                                <p>Real-time urban analytics using advanced ML algorithms</p>
+                            </div>
+                            <div class="card-face card-back">
+                                <h5>🏙️ Smart City Solutions</h5>
+                                <p>Comprehensive urban mobility and safety management</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Enhanced Sidebar -->
+            <div class="col-md-3">
+                <div class="sidebar p-4">
+                    <h5 class="fw-bold mb-4 text-center">Prediction Models</h5>
+                    
+                    <div class="menu-item active" onclick="showModule('air_quality')" id="menu-air_quality">
+                        <div class="d-flex align-items-center">
+                            <img src="https://images.unsplash.com/photo-1611273426858-450d8e3c9fce?w=80&h=80&fit=crop&crop=center" class="header-image" alt="Air Quality">
+                            <div>
+                                <h6 class="mb-1">Air Quality</h6>
+                                <small>AQI Prediction</small>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="menu-item" onclick="showModule('accident')" id="menu-accident">
+                        <div class="d-flex align-items-center">
+                            <img src="https://images.unsplash.com/photo-1449824913935-59a10b8d2000?w=80&h=80&fit=crop&crop=center" class="header-image" alt="Traffic">
+                            <div>
+                                <h6 class="mb-1">Accident Risk</h6>
+                                <small>Safety Analysis</small>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="menu-item" onclick="showModule('parking')" id="menu-parking">
+                        <div class="d-flex align-items-center">
+                            <img src="https://images.unsplash.com/photo-1590674899484-d5640e854abe?w=80&h=80&fit=crop&crop=center" class="header-image" alt="Parking">
+                            <div>
+                                <h6 class="mb-1">Smart Parking</h6>
+                                <small>Availability Forecast</small>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="menu-item" onclick="showModule('activity')" id="menu-activity">
+                        <div class="d-flex align-items-center">
+                            <img src="https://images.unsplash.com/photo-1573164713714-d95e436ab8d6?w=80&h=80&fit=crop&crop=center" class="header-image" alt="Citizens">
+                            <div>
+                                <h6 class="mb-1">Citizen Activity</h6>
+                                <small>Urban Monitoring</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Feature Description Cards -->
+                    <div class="mt-4">
+                        <h6 class="fw-bold mb-3">Model Features</h6>
+                        <div class="feature-card" onclick="flipCard(this)">
+                            <div class="card-container">
+                                <div class="card-face card-front">
+                                    <i class="fas fa-brain feature-icon text-primary"></i>
+                                    <h6>Machine Learning</h6>
+                                    <p class="small">Advanced algorithms for accurate predictions</p>
+                                </div>
+                                <div class="card-face card-back">
+                                    <i class="fas fa-chart-line feature-icon text-success"></i>
+                                    <h6>Real-time Analytics</h6>
+                                    <p class="small">Instant processing and prediction results</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main Content -->
+            <div class="col-md-9 p-4">
+                <!-- Air Quality Module -->
+                <div id="air_quality_module" class="main-card p-5">
+                    <div class="d-flex align-items-center mb-4">
+                        <img src="https://images.unsplash.com/photo-1611273426858-450d8e3c9fce?w=100&h=100&fit=crop&crop=center" class="header-image me-3" alt="Air Quality">
+                        <div>
+                            <h3 class="fw-bold mb-2">Air Quality Prediction</h3>
+                            <p class="text-muted mb-0">Predict Air Quality Index using pollutant levels and meteorological data</p>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold">PM2.5 (µg/m³)</label>
+                                <input type="number" class="form-control" id="pm25" placeholder="Fine particles" value="50">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold">PM10 (µg/m³)</label>
+                                <input type="number" class="form-control" id="pm10" placeholder="Coarse particles" value="80">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold">NO2 (µg/m³)</label>
+                                <input type="number" class="form-control" id="no2" placeholder="Nitrogen dioxide" value="40">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold">CO (ppm)</label>
+                                <input type="number" class="form-control" id="co" placeholder="Carbon monoxide" step="0.1" value="1.0">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold">SO2 (µg/m³)</label>
+                                <input type="number" class="form-control" id="so2" placeholder="Sulfur dioxide" value="20">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold">Temperature (°C)</label>
+                                <input type="number" class="form-control" id="temperature" placeholder="Ambient temperature" value="25">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold">Humidity (%)</label>
+                                <input type="number" class="form-control" id="humidity" placeholder="Relative humidity" value="60">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold">Wind Speed (km/h)</label>
+                                <input type="number" class="form-control" id="wind_speed" placeholder="Wind velocity" value="10">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="text-center">
+                        <button class="btn btn-primary btn-predict" onclick="predict('air_quality')">
+                            <i class="fas fa-chart-line me-2"></i>PREDICT AQI
+                        </button>
+                    </div>
+                    <div id="air_quality_result" style="display:none;"></div>
+                </div>
+
+                <!-- Accident Risk Module -->
+                <div id="accident_module" class="main-card p-5" style="display:none;">
+                    <div class="d-flex align-items-center mb-4">
+                        <img src="https://images.unsplash.com/photo-1449824913935-59a10b8d2000?w=100&h=100&fit=crop&crop=center" class="header-image me-3" alt="Traffic">
+                        <div>
+                            <h3 class="fw-bold mb-2">Accident Risk Prediction</h3>
+                            <p class="text-muted mb-0">Assess traffic safety risks based on road conditions and environmental factors</p>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold">Vehicle Density</label>
+                                <input type="number" class="form-control" id="vehicle_density" placeholder="Vehicles per km" value="300">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold">Average Speed (km/h)</label>
+                                <input type="number" class="form-control" id="avg_speed" placeholder="Traffic speed" value="60">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold">Visibility (m)</label>
+                                <input type="number" class="form-control" id="visibility" placeholder="Sight distance" value="500">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold">Road Condition</label>
+                                <select class="form-select" id="road_condition">
+                                    <option value="0">Poor</option>
+                                    <option value="1" selected>Fair</option>
+                                    <option value="2">Good</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold">Weather Condition</label>
+                                <select class="form-select" id="weather_condition">
+                                    <option value="0" selected>Clear</option>
+                                    <option value="1">Rainy</option>
+                                    <option value="2">Foggy</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold">Time of Day</label>
+                                <select class="form-select" id="time_of_day">
+                                    <option value="0">Morning</option>
+                                    <option value="1" selected>Afternoon</option>
+                                    <option value="2">Evening</option>
+                                    <option value="3">Night</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="text-center">
+                        <button class="btn btn-primary btn-predict" onclick="predict('accident')">
+                            <i class="fas fa-shield-alt me-2"></i>PREDICT RISK
+                        </button>
+                    </div>
+                    <div id="accident_result" style="display:none;"></div>
+                </div>
+
+                <!-- Parking Module -->
+                <div id="parking_module" class="main-card p-5" style="display:none;">
+                    <div class="d-flex align-items-center mb-4">
+                        <img src="https://images.unsplash.com/photo-1590674899484-d5640e854abe?w=100&h=100&fit=crop&crop=center" class="header-image me-3" alt="Parking">
+                        <div>
+                            <h3 class="fw-bold mb-2">Smart Parking Prediction</h3>
+                            <p class="text-muted mb-0">Forecast parking availability using traffic patterns and occupancy data</p>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold">Parking Capacity</label>
+                                <input type="number" class="form-control" id="parking_capacity" placeholder="Total slots" value="150">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold">Occupied Slots</label>
+                                <input type="number" class="form-control" id="occupied_slots" placeholder="Current occupancy" value="100">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold">Entry Rate (per hour)</label>
+                                <input type="number" class="form-control" id="entry_rate" placeholder="Vehicles entering" value="20">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold">Exit Rate (per hour)</label>
+                                <input type="number" class="form-control" id="exit_rate" placeholder="Vehicles leaving" value="15">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold">Time of Day</label>
+                                <select class="form-select" id="parking_time_of_day">
+                                    <option value="0">Morning</option>
+                                    <option value="1">Noon</option>
+                                    <option value="2" selected>Evening</option>
+                                    <option value="3">Night</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold">Weekday</label>
+                                <select class="form-select" id="weekday">
+                                    <option value="0">Monday</option>
+                                    <option value="1" selected>Tuesday</option>
+                                    <option value="2">Wednesday</option>
+                                    <option value="3">Thursday</option>
+                                    <option value="4">Friday</option>
+                                    <option value="5">Saturday</option>
+                                    <option value="6">Sunday</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold">Nearby Events</label>
+                                <select class="form-select" id="nearby_events">
+                                    <option value="0" selected>None</option>
+                                    <option value="1">Event Nearby</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="text-center">
+                        <button class="btn btn-primary btn-predict" onclick="predict('parking')">
+                            <i class="fas fa-car me-2"></i>PREDICT AVAILABILITY
+                        </button>
+                    </div>
+                    <div id="parking_result" style="display:none;"></div>
+                </div>
+
+                <!-- Activity Module -->
+                <div id="activity_module" class="main-card p-5" style="display:none;">
+                    <div class="d-flex align-items-center mb-4">
+                        <img src="https://images.unsplash.com/photo-1573164713714-d95e436ab8d6?w=100&h=100&fit=crop&crop=center" class="header-image me-3" alt="Citizens">
+                        <div>
+                            <h3 class="fw-bold mb-2">Citizen Activity Prediction</h3>
+                            <p class="text-muted mb-0">Monitor urban activity levels using demographic and environmental indicators</p>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold">Population Density (per km²)</label>
+                                <input type="number" class="form-control" id="population_density" placeholder="People per area" value="8000">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold">Average Age</label>
+                                <input type="number" class="form-control" id="avg_age" placeholder="Demographic age" value="35">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold">Workplace Count</label>
+                                <input type="number" class="form-control" id="workplace_count" placeholder="Business density" value="25">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold">Public Events</label>
+                                <input type="number" class="form-control" id="public_events" placeholder="Event count" value="1">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold">Temperature (°C)</label>
+                                <input type="number" class="form-control" id="activity_temperature" placeholder="Weather factor" value="25">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold">Day of Week</label>
+                                <select class="form-select" id="day_of_week">
+                                    <option value="0">Monday</option>
+                                    <option value="1" selected>Tuesday</option>
+                                    <option value="2">Wednesday</option>
+                                    <option value="3">Thursday</option>
+                                    <option value="4">Friday</option>
+                                    <option value="5">Saturday</option>
+                                    <option value="6">Sunday</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="text-center">
+                        <button class="btn btn-primary btn-predict" onclick="predict('activity')">
+                            <i class="fas fa-chart-bar me-2"></i>PREDICT ACTIVITY
+                        </button>
+                    </div>
+                    <div id="activity_result" style="display:none;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Auto-rotate hero card
+        setInterval(() => {
+            document.getElementById('rotatingCard').classList.toggle('flipped');
+        }, 3000);
+
+        function flipCard(card) {
+            card.querySelector('.card-container').classList.toggle('flipped');
+        }
+
+        function showModule(module) {
+            document.querySelectorAll('[id$="_module"]').forEach(el => el.style.display = 'none');
+            document.getElementById(module + '_module').style.display = 'block';
+            
+            document.querySelectorAll('.menu-item').forEach(el => el.classList.remove('active'));
+            document.getElementById('menu-' + module).classList.add('active');
+        }
+        
+        function predict(module) {
+            let data = { module: module };
+            
+            if (module === 'accident') {
+                data = {
+                    ...data,
+                    vehicle_density: document.getElementById('vehicle_density').value,
+                    avg_speed: document.getElementById('avg_speed').value,
+                    road_condition: document.getElementById('road_condition').value,
+                    weather_condition: document.getElementById('weather_condition').value,
+                    visibility: document.getElementById('visibility').value,
+                    time_of_day: document.getElementById('time_of_day').value
+                };
+            } else if (module === 'air_quality') {
+                data = {
+                    ...data,
+                    pm25: document.getElementById('pm25').value,
+                    pm10: document.getElementById('pm10').value,
+                    no2: document.getElementById('no2').value,
+                    co: document.getElementById('co').value,
+                    so2: document.getElementById('so2').value,
+                    temperature: document.getElementById('temperature').value,
+                    humidity: document.getElementById('humidity').value,
+                    wind_speed: document.getElementById('wind_speed').value
+                };
+            } else if (module === 'activity') {
+                data = {
+                    ...data,
+                    population_density: document.getElementById('population_density').value,
+                    avg_age: document.getElementById('avg_age').value,
+                    workplace_count: document.getElementById('workplace_count').value,
+                    public_events: document.getElementById('public_events').value,
+                    temperature: document.getElementById('activity_temperature').value,
+                    day_of_week: document.getElementById('day_of_week').value
+                };
+            } else if (module === 'parking') {
+                data = {
+                    ...data,
+                    parking_capacity: document.getElementById('parking_capacity').value,
+                    occupied_slots: document.getElementById('occupied_slots').value,
+                    entry_rate: document.getElementById('entry_rate').value,
+                    exit_rate: document.getElementById('exit_rate').value,
+                    time_of_day: document.getElementById('parking_time_of_day').value,
+                    weekday: document.getElementById('weekday').value,
+                    nearby_events: document.getElementById('nearby_events').value
+                };
+            }
+
+            fetch('/predict', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            })
+            .then(response => response.json())
+            .then(result => {
+                const resultDiv = document.getElementById(module + '_result');
+                resultDiv.style.display = 'block';
+                
+                if (result.success) {
+                    let className = 'result-card ';
+                    let icon = '';
+                    
+                    if (module === 'air_quality') {
+                        const aqi = result.prediction;
+                        if (aqi <= 50) { className += 'result-safe'; icon = '🟢'; }
+                        else if (aqi <= 150) { className += 'result-moderate'; icon = '🟡'; }
+                        else { className += 'result-high'; icon = '🔴'; }
+                        resultDiv.innerHTML = `${icon} <strong>Predicted AQI: ${aqi}</strong>`;
+                    } else {
+                        const pred = result.prediction;
+                        if (pred === 'Low' || pred === 'Available') { className += 'result-safe'; icon = '🟢'; }
+                        else if (pred === 'Medium' || pred === 'Moderate') { className += 'result-moderate'; icon = '🟡'; }
+                        else { className += 'result-high'; icon = '🔴'; }
+                        resultDiv.innerHTML = `${icon} <strong>Prediction: ${pred}</strong>`;
+                    }
+                    resultDiv.className = className;
+                } else {
+                    resultDiv.className = 'result-card result-high';
+                    resultDiv.innerHTML = `🔴 <strong>Error: ${result.error}</strong>`;
+                }
+            })
+            .catch(error => {
+                const resultDiv = document.getElementById(module + '_result');
+                resultDiv.style.display = 'block';
+                resultDiv.className = 'result-card result-high';
+                resultDiv.innerHTML = `🔴 <strong>Error: ${error.message}</strong>`;
+            });
+        }
+    </script>
+</body>
+</html>
