@@ -1,13 +1,251 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Urban Mobility and Smart City System</title>
+    <title>Smart City Dashboard - SURVEX</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Add new dependencies -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        body { font-family: 'Inter', sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); margin: 0; }
-        .navbar { background: rgba(255,255,255,0.95); backdrop-filter: blur(10px); box-shadow: 0 2px 20px rgba(0,0,0,0.1); }
+        body { font-family: 'Inter', sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); margin: 0; padding-top: 80px; }
+        
+        /* Enhanced Dynamic Navbar */
+        .navbar {
+            background: linear-gradient(135deg, rgba(13, 110, 253, 0.95) 0%, rgba(37, 99, 235, 0.95) 100%);
+            backdrop-filter: blur(20px);
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+            padding: 1rem 0;
+            position: fixed;
+            top: 0;
+            width: 100%;
+            z-index: 1000;
+            transition: all 0.3s ease;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .navbar.scrolled {
+            background: linear-gradient(135deg, rgba(13, 110, 253, 0.98) 0%, rgba(37, 99, 235, 0.98) 100%);
+            box-shadow: 0 8px 40px rgba(0, 0, 0, 0.15);
+            padding: 0.75rem 0;
+        }
+        
+        .navbar-brand {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: white !important;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+        
+        .navbar-brand:hover {
+            transform: scale(1.05);
+            text-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
+        }
+        
+        .navbar-logo {
+            width: 45px;
+            height: 45px;
+            background: linear-gradient(135deg, #fff 0%, #f0f0f0 100%);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2); }
+            50% { transform: scale(1.05); box-shadow: 0 6px 25px rgba(255, 255, 255, 0.4); }
+        }
+        
+        .navbar-nav {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .nav-link {
+            color: rgba(255, 255, 255, 0.9) !important;
+            font-weight: 500;
+            padding: 0.5rem 1rem !important;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            position: relative;
+            text-decoration: none;
+        }
+        
+        .nav-link::before {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            width: 0;
+            height: 2px;
+            background: white;
+            transition: all 0.3s ease;
+            transform: translateX(-50%);
+        }
+        
+        .nav-link:hover {
+            color: white !important;
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateY(-2px);
+        }
+        
+        .nav-link:hover::before {
+            width: 80%;
+        }
+        
+        .nav-link.active {
+            background: rgba(255, 255, 255, 0.2);
+            color: white !important;
+        }
+        
+        .nav-link.active::before {
+            width: 80%;
+        }
+        
+        .navbar-status {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-left: auto;
+        }
+        
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 20px;
+            color: white;
+            font-size: 0.875rem;
+            font-weight: 500;
+            backdrop-filter: blur(10px);
+        }
+        
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #10B981;
+            animation: blink 2s infinite;
+            box-shadow: 0 0 10px #10B981;
+        }
+        
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        .live-time {
+            font-family: 'Courier New', monospace;
+            font-weight: 600;
+            letter-spacing: 1px;
+        }
+        
+        .navbar-toggler {
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 8px;
+            padding: 0.5rem;
+        }
+        
+        .navbar-toggler:focus {
+            box-shadow: 0 0 0 0.2rem rgba(255, 255, 255, 0.25);
+        }
+        
+        .navbar-toggler-icon {
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba(255, 255, 255, 1)' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
+        }
+        
+        @media (max-width: 991px) {
+            .navbar-nav {
+                margin-top: 1rem;
+                flex-direction: column;
+                width: 100%;
+            }
+            
+            .navbar-status {
+                margin-left: 0;
+                margin-top: 1rem;
+                width: 100%;
+                justify-content: center;
+            }
+        }
+        
+        /* Smooth Scroll Behavior */
+        html {
+            scroll-behavior: smooth;
+        }
+        
+        /* Fade-in Animation for Sections */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .fade-in-up {
+            animation: fadeInUp 0.6s ease-out;
+        }
+        
+        /* Hover Effects for Cards */
+        .card {
+            transition: all 0.3s ease;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+        }
+        
+        /* Loading Animation */
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .loading-spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s linear infinite;
+        }
+        
+        /* Gradient Text Effect */
+        .gradient-text {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        /* Floating Animation */
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+        
+        .floating {
+            animation: float 3s ease-in-out infinite;
+        }
         .hero-section { background: linear-gradient(135deg, #0d6efd 0%, #2563eb 100%); color: white; padding: 60px 0; position: relative; overflow: hidden; }
         .hero-section::before { content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 100" fill="white" opacity="0.1"><polygon points="0,0 1000,0 1000,100 0,80"/></svg>'); }
         .feature-card { background: white; border-radius: 15px; padding: 30px; margin: 20px 0; box-shadow: 0 10px 30px rgba(0,0,0,0.1); transition: all 0.3s; cursor: pointer; }
@@ -33,21 +271,412 @@
         .menu-item.active { background: linear-gradient(135deg, #0d6efd 0%, #2563eb 100%); color: white; }
         .header-image { width: 80px; height: 80px; border-radius: 50%; object-fit: cover; margin-right: 20px; }
         .sidebar { background: rgba(255,255,255,0.95); backdrop-filter: blur(10px); border-radius: 20px; margin: 20px; }
+        /* Smart City Score Gauge */
+        .gauge-container {
+            position: relative;
+            width: 100%;
+            height: 200px;
+            margin: 20px 0;
+        }
+        
+        .gauge-value {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+        }
+        
+        .gauge-score {
+            font-size: 2.5rem;
+            font-weight: 700;
+            line-height: 1;
+        }
+        
+        .gauge-status {
+            font-size: 1rem;
+            font-weight: 600;
+            padding: 0.25rem 0.75rem;
+            border-radius: 1rem;
+            margin-top: 0.5rem;
+            display: inline-block;
+        }
+        
+        /* Metric Cards */
+        .metric-card {
+            background: white;
+            border-radius: 10px;
+            padding: 1.25rem;
+            margin-bottom: 1rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            transition: transform 0.2s, box-shadow 0.2s;
+            height: 100%;
+        }
+        
+        .metric-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .metric-icon {
+            font-size: 1.5rem;
+            margin-bottom: 0.75rem;
+            display: inline-block;
+        }
+        
+        .metric-value {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin: 0.5rem 0;
+        }
+        
+        .metric-label {
+            color: #6B7280;
+            font-size: 0.875rem;
+            margin: 0;
+        }
+        
+        /* Map Container */
+        #cityMap {
+            height: 500px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        }
+        
+        /* Alerts Panel */
+        .alert-item {
+            border-left: 4px solid #3B82F6;
+            padding: 0.75rem 1rem;
+            margin-bottom: 0.5rem;
+            background: white;
+            border-radius: 0.375rem;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+            display: flex;
+            align-items: flex-start;
+        }
+        
+        .alert-item.warning {
+            border-left-color: #F59E0B;
+        }
+        
+        .alert-item.danger {
+            border-left-color: #EF4444;
+        }
+        
+        .alert-item.success {
+            border-left-color: #10B981;
+        }
+        
+        .alert-icon {
+            margin-right: 0.75rem;
+            font-size: 1.25rem;
+        }
+        
+        .alert-content {
+            flex: 1;
+        }
+        
+        .alert-time {
+            font-size: 0.75rem;
+            color: #6B7280;
+            margin-top: 0.25rem;
+        }
+        
+        /* Enhanced City Dropdown */
+        #cityInput {
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23343a40' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 5l6 6 6-6'/%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right 0.75rem center;
+            background-size: 16px 12px;
+            padding-right: 2.5rem;
+            transition: all 0.3s ease;
+        }
+        
+        #cityInput:hover {
+            border-color: #0d6efd;
+            box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.1);
+        }
+        
+        #cityInput:focus {
+            border-color: #0d6efd;
+            box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+        }
+        
+        /* Data Input Section */
+        .data-input-section {
+            transition: all 0.3s ease;
+        }
+        
+        /* Chart Containers */
+        .card canvas {
+            max-height: 300px;
+        }
+        
+        /* Mode Toggle Buttons */
+        .btn-check:checked + .btn {
+            background-color: var(--bs-primary);
+            border-color: var(--bs-primary);
+            color: white;
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .gauge-container {
+                height: 180px;
+            }
+            
+            #cityMap {
+                height: 400px;
+            }
+            
+            .btn-group {
+                flex-direction: column;
+                width: 100%;
+            }
+            
+            .btn-group .btn {
+                width: 100%;
+                margin-bottom: 0.5rem;
+            }
+        }
     </style>
 </head>
 <body>
-    <!-- Navigation Bar -->
-    <nav class="navbar navbar-light sticky-top">
-        <div class="container-fluid">
-            <div class="navbar-brand mx-auto text-center">
-                <h4 class="mb-0 text-dark fw-bold">SURVEX - Urban Mobility and Smart City System</h4>
+    <!-- Enhanced Dynamic Navigation Bar -->
+    <nav class="navbar navbar-expand-lg">
+        <div class="container-fluid px-4">
+            <a class="navbar-brand" href="#">
+                <div class="navbar-logo">
+                    <i class="fas fa-city text-primary"></i>
+                </div>
+                <div>
+                    <div class="fw-bold">SURVEX</div>
+                    <small class="d-block" style="font-size: 0.7rem; opacity: 0.9;">Smart City System</small>
+                </div>
+            </a>
+            
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="#" onclick="scrollToSection('dashboard')">
+                            <i class="fas fa-home me-1"></i>Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" onclick="scrollToSection('predictions')">
+                            <i class="fas fa-chart-line me-1"></i>Predictions
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" onclick="scrollToSection('map')">
+                            <i class="fas fa-map me-1"></i>Map
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link position-relative" href="#" onclick="scrollToSection('alerts')">
+                            <i class="fas fa-bell me-1"></i>Alerts
+                            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" id="alertBadge" style="display: none;">
+                                0
+                            </span>
+                        </a>
+                    </li>
+                </ul>
+                
+                <div class="navbar-status">
+                    <div class="status-indicator">
+                        <div class="status-dot"></div>
+                        <span>System Online</span>
+                    </div>
+                    <div class="status-indicator">
+                        <i class="fas fa-clock me-1"></i>
+                        <span class="live-time" id="liveTime">--:--:--</span>
+                    </div>
+                    <div class="status-indicator" id="cityStatusNav" style="display: none;">
+                        <i class="fas fa-map-marker-alt me-1"></i>
+                        <span id="currentCityNav">--</span>
+                    </div>
+                </div>
             </div>
         </div>
     </nav>
 
     <!-- Hero Section -->
-    <div class="hero-section text-center">
-        <div class="container">
+    <div class="hero-section text-center" data-section="dashboard">
+        <div class="container py-4">
+        <!-- Location Input Section -->
+        <div class="card mb-4 border-0 shadow-sm">
+            <div class="card-body">
+                <h5 class="card-title mb-3">
+                    <i class="fas fa-map-marker-alt me-2"></i>Select Your City
+                </h5>
+                <div class="row">
+                    <div class="col-md-8">
+                        <div class="input-group mb-3">
+                            <span class="input-group-text bg-primary text-white"><i class="fas fa-city"></i></span>
+                            <select class="form-select form-select-lg" id="cityInput" style="cursor: pointer;">
+                                <option value="">Select a city...</option>
+                                <optgroup label="🇮🇳 Indian Cities">
+                                    <option value="New Delhi">New Delhi</option>
+                                    <option value="Mumbai">Mumbai</option>
+                                    <option value="Bangalore">Bangalore</option>
+                                    <option value="Kolkata">Kolkata</option>
+                                    <option value="Chennai">Chennai</option>
+                                    <option value="Hyderabad">Hyderabad</option>
+                                    <option value="Pune">Pune</option>
+                                </optgroup>
+                                <optgroup label="🌍 International Cities">
+                                    <option value="London">London</option>
+                                    <option value="New York">New York</option>
+                                    <option value="Tokyo">Tokyo</option>
+                                    <option value="Paris">Paris</option>
+                                    <option value="Sydney">Sydney</option>
+                                </optgroup>
+                            </select>
+                            <button class="btn btn-primary btn-lg" onclick="analyzeCity()">
+                                <i class="fas fa-search me-2"></i>Analyze City
+                            </button>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <button class="btn btn-outline-primary w-100 btn-lg" onclick="detectLocation()">
+                            <i class="fas fa-crosshairs me-2"></i>Auto-Detect Location
+                        </button>
+                    </div>
+                </div>
+                <div id="cityInfo" class="mt-3" style="display: none;">
+                    <div class="alert alert-info mb-0 d-flex align-items-center">
+                        <i class="fas fa-info-circle me-2 fs-5"></i>
+                        <div>
+                            <strong id="currentCityName">--</strong>
+                            <span id="currentCityCoords" class="text-muted ms-2"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Recommendations Panel -->
+        <div class="card mb-4 border-0 shadow-sm" id="recommendationsPanel" style="display: none;">
+            <div class="card-body">
+                <h5 class="card-title mb-3">
+                    <i class="fas fa-lightbulb me-2"></i>Insights & Recommendations
+                </h5>
+                <div id="recommendationsContent">
+                    <!-- Will be populated by JavaScript -->
+                </div>
+            </div>
+        </div>
+        
+        <!-- Smart City Score Card -->
+        <div class="row mb-4">
+            <div class="col-md-4">
+                <div class="card h-100 border-0 shadow-sm">
+                    <div class="card-body text-center">
+                        <h5 class="card-title mb-3">Smart City Score</h5>
+                        <div class="gauge-container">
+                            <canvas id="gaugeChart"></canvas>
+                            <div class="gauge-value">
+                                <div class="gauge-score" id="cityScore">--</div>
+                                <div class="gauge-status" id="statusBadge">--</div>
+                            </div>
+                        </div>
+                        <p class="text-muted mt-2 mb-0" id="lastUpdated">Last updated: --</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Metrics Overview -->
+            <div class="col-md-8">
+                <div class="card h-100 border-0 shadow-sm">
+                    <div class="card-body">
+                        <h5 class="card-title mb-4">City Metrics Overview</h5>
+                        <div class="row">
+                            <div class="col-md-3 mb-3">
+                                <div class="metric-card">
+                                    <div class="metric-icon" style="color: #3B82F6;">
+                                        <i class="fas fa-smog"></i>
+                                    </div>
+                                    <h6 class="metric-label">Air Quality</h6>
+                                    <div id="airQualityMetric">--</div>
+                                </div>
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <div class="metric-card">
+                                    <div class="metric-icon" style="color: #EF4444;">
+                                        <i class="fas fa-car-crash"></i>
+                                    </div>
+                                    <h6 class="metric-label">Accident Risk</h6>
+                                    <div id="accidentRiskMetric">--</div>
+                                </div>
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <div class="metric-card">
+                                    <div class="metric-icon" style="color: #10B981;">
+                                        <i class="fas fa-parking"></i>
+                                    </div>
+                                    <h6 class="metric-label">Parking</h6>
+                                    <div id="parkingMetric">--</div>
+                                </div>
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <div class="metric-card">
+                                    <div class="metric-icon" style="color: #8B5CF6;">
+                                        <i class="fas fa-users"></i>
+                                    </div>
+                                    <h6 class="metric-label">Activity</h6>
+                                    <div id="activityMetric">--</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Interactive Map -->
+        <div class="card mb-4 border-0 shadow-sm" data-section="map">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="card-title mb-0">Interactive City Map</h5>
+                    <div class="btn-group" role="group">
+                        <button type="button" class="btn btn-outline-danger btn-sm active" data-layer="accident_risk">
+                            <i class="fas fa-car-crash"></i> Accident Risk
+                        </button>
+                        <button type="button" class="btn btn-outline-warning btn-sm" data-layer="air_quality">
+                            <i class="fas fa-smog"></i> Air Quality
+                        </button>
+                        <button type="button" class="btn btn-outline-primary btn-sm" data-layer="parking">
+                            <i class="fas fa-parking"></i> Parking
+                        </button>
+                        <button type="button" class="btn btn-outline-success btn-sm" data-layer="crowd_density">
+                            <i class="fas fa-users"></i> Crowd Density
+                        </button>
+                    </div>
+                </div>
+                <div id="cityMap"></div>
+            </div>
+        </div>
+        
+        <!-- Alerts Panel -->
+        <div class="card border-0 shadow-sm" data-section="alerts">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="card-title mb-0">Alerts & Notifications</h5>
+                    <button class="btn btn-sm btn-outline-secondary" onclick="clearAlerts()">
+                        <i class="fas fa-trash-alt"></i> Clear All
+                    </button>
+                </div>
+                <div id="alertsContainer">
+                    <div class="text-center text-muted py-3" id="noAlertsMessage">
+                        No active alerts
+                    </div>
+                </div>
+            </div>
+        </div>
             <h1 class="display-4 fw-bold mb-4">SURVEX - Smart City AI Platform</h1>
             <p class="lead mb-5">Advanced Machine Learning Models for Urban Intelligence</p>
             <div class="row justify-content-center">
@@ -138,17 +767,30 @@
             </div>
 
             <!-- Main Content -->
-            <div class="col-md-9 p-4">
+            <div class="col-md-9 p-4" data-section="predictions">
                 <!-- Air Quality Module -->
                 <div id="air_quality_module" class="main-card p-5">
-                    <div class="d-flex align-items-center mb-4">
-                        <img src="https://images.unsplash.com/photo-1611273426858-450d8e3c9fce?w=100&h=100&fit=crop&crop=center" class="header-image me-3" alt="Air Quality">
-                        <div>
-                            <h3 class="fw-bold mb-2">Air Quality Prediction</h3>
-                            <p class="text-muted mb-0">Predict Air Quality Index using pollutant levels and meteorological data</p>
+                    <div class="d-flex align-items-center justify-content-between mb-4">
+                        <div class="d-flex align-items-center">
+                            <img src="https://images.unsplash.com/photo-1611273426858-450d8e3c9fce?w=100&h=100&fit=crop&crop=center" class="header-image me-3" alt="Air Quality">
+                            <div>
+                                <h3 class="fw-bold mb-2">Air Quality Prediction</h3>
+                                <p class="text-muted mb-0">Predict Air Quality Index using pollutant levels and meteorological data</p>
+                            </div>
+                        </div>
+                        <div class="btn-group" role="group">
+                            <input type="radio" class="btn-check" name="air_quality_mode" id="air_manual" value="manual" checked>
+                            <label class="btn btn-outline-primary" for="air_manual">
+                                <i class="fas fa-keyboard me-2"></i>Manual Input
+                            </label>
+                            <input type="radio" class="btn-check" name="air_quality_mode" id="air_api" value="api">
+                            <label class="btn btn-outline-success" for="air_api">
+                                <i class="fas fa-cloud-download-alt me-2"></i>Fetch from API
+                            </label>
                         </div>
                     </div>
                     
+                    <div id="air_quality_manual" class="data-input-section">
                     <div class="row">
                         <div class="col-md-6">
                             <div class="mb-3">
@@ -187,25 +829,75 @@
                             </div>
                         </div>
                     </div>
+                    </div>
                     
-                    <div class="text-center">
+                    <div id="air_quality_api" class="data-input-section" style="display: none;">
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle me-2"></i>
+                            Click "Fetch Data" to retrieve real-time air quality data for the selected city, then click "Predict AQI" to run the ML model.
+                        </div>
+                        <div class="text-center mb-3">
+                            <button class="btn btn-success btn-lg" onclick="fetchAirQualityData()">
+                                <i class="fas fa-cloud-download-alt me-2"></i>Fetch Air Quality Data
+                            </button>
+                        </div>
+                        <div id="air_quality_api_data" class="row"></div>
+                    </div>
+                    
+                    <div class="text-center mt-4">
                         <button class="btn btn-primary btn-predict" onclick="predict('air_quality')">
                             <i class="fas fa-chart-line me-2"></i>PREDICT AQI
                         </button>
                     </div>
-                    <div id="air_quality_result" style="display:none;"></div>
+                    
+                    <div id="air_quality_result" style="display:none;" class="mt-4"></div>
+                    
+                    <!-- Visualization Section -->
+                    <div id="air_quality_charts" class="mt-4" style="display: none;">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="card">
+                                    <div class="card-body">
+                                        <h6 class="card-title">AQI Prediction</h6>
+                                        <canvas id="airQualityChart"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="card">
+                                    <div class="card-body">
+                                        <h6 class="card-title">Pollutant Breakdown</h6>
+                                        <canvas id="airPollutantChart"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- Accident Risk Module -->
                 <div id="accident_module" class="main-card p-5" style="display:none;">
-                    <div class="d-flex align-items-center mb-4">
-                        <img src="https://images.unsplash.com/photo-1449824913935-59a10b8d2000?w=100&h=100&fit=crop&crop=center" class="header-image me-3" alt="Traffic">
-                        <div>
-                            <h3 class="fw-bold mb-2">Accident Risk Prediction</h3>
-                            <p class="text-muted mb-0">Assess traffic safety risks based on road conditions and environmental factors</p>
+                    <div class="d-flex align-items-center justify-content-between mb-4">
+                        <div class="d-flex align-items-center">
+                            <img src="https://images.unsplash.com/photo-1449824913935-59a10b8d2000?w=100&h=100&fit=crop&crop=center" class="header-image me-3" alt="Traffic">
+                            <div>
+                                <h3 class="fw-bold mb-2">Accident Risk Prediction</h3>
+                                <p class="text-muted mb-0">Assess traffic safety risks based on road conditions and environmental factors</p>
+                            </div>
+                        </div>
+                        <div class="btn-group" role="group">
+                            <input type="radio" class="btn-check" name="accident_mode" id="accident_manual" value="manual" checked>
+                            <label class="btn btn-outline-primary" for="accident_manual">
+                                <i class="fas fa-keyboard me-2"></i>Manual Input
+                            </label>
+                            <input type="radio" class="btn-check" name="accident_mode" id="accident_api" value="api">
+                            <label class="btn btn-outline-success" for="accident_api">
+                                <i class="fas fa-cloud-download-alt me-2"></i>Fetch from API
+                            </label>
                         </div>
                     </div>
                     
+                    <div id="accident_manual" class="data-input-section">
                     <div class="row">
                         <div class="col-md-6">
                             <div class="mb-3">
@@ -249,25 +941,66 @@
                             </div>
                         </div>
                     </div>
+                    </div>
                     
-                    <div class="text-center">
+                    <div id="accident_api" class="data-input-section" style="display: none;">
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle me-2"></i>
+                            Click "Fetch Data" to retrieve real-time traffic and weather data, then click "Predict Risk" to run the ML model.
+                        </div>
+                        <div class="text-center mb-3">
+                            <button class="btn btn-success btn-lg" onclick="fetchAccidentData()">
+                                <i class="fas fa-cloud-download-alt me-2"></i>Fetch Traffic & Weather Data
+                            </button>
+                        </div>
+                        <div id="accident_api_data" class="row"></div>
+                    </div>
+                    
+                    <div class="text-center mt-4">
                         <button class="btn btn-primary btn-predict" onclick="predict('accident')">
                             <i class="fas fa-shield-alt me-2"></i>PREDICT RISK
                         </button>
                     </div>
-                    <div id="accident_result" style="display:none;"></div>
+                    <div id="accident_result" style="display:none;" class="mt-4"></div>
+                    
+                    <!-- Visualization Section -->
+                    <div id="accident_charts" class="mt-4" style="display: none;">
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="card">
+                                    <div class="card-body">
+                                        <h6 class="card-title">Risk Factors Analysis</h6>
+                                        <canvas id="accidentRiskChart"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- Parking Module -->
                 <div id="parking_module" class="main-card p-5" style="display:none;">
-                    <div class="d-flex align-items-center mb-4">
-                        <img src="https://images.unsplash.com/photo-1590674899484-d5640e854abe?w=100&h=100&fit=crop&crop=center" class="header-image me-3" alt="Parking">
-                        <div>
-                            <h3 class="fw-bold mb-2">Smart Parking Prediction</h3>
-                            <p class="text-muted mb-0">Forecast parking availability using traffic patterns and occupancy data</p>
+                    <div class="d-flex align-items-center justify-content-between mb-4">
+                        <div class="d-flex align-items-center">
+                            <img src="https://images.unsplash.com/photo-1590674899484-d5640e854abe?w=100&h=100&fit=crop&crop=center" class="header-image me-3" alt="Parking">
+                            <div>
+                                <h3 class="fw-bold mb-2">Smart Parking Prediction</h3>
+                                <p class="text-muted mb-0">Forecast parking availability using traffic patterns and occupancy data</p>
+                            </div>
+                        </div>
+                        <div class="btn-group" role="group">
+                            <input type="radio" class="btn-check" name="parking_mode" id="parking_manual" value="manual" checked>
+                            <label class="btn btn-outline-primary" for="parking_manual">
+                                <i class="fas fa-keyboard me-2"></i>Manual Input
+                            </label>
+                            <input type="radio" class="btn-check" name="parking_mode" id="parking_api" value="api">
+                            <label class="btn btn-outline-success" for="parking_api">
+                                <i class="fas fa-cloud-download-alt me-2"></i>Fetch from API
+                            </label>
                         </div>
                     </div>
                     
+                    <div id="parking_manual" class="data-input-section">
                     <div class="row">
                         <div class="col-md-6">
                             <div class="mb-3">
@@ -318,25 +1051,74 @@
                             </div>
                         </div>
                     </div>
+                    </div>
                     
-                    <div class="text-center">
+                    <div id="parking_api" class="data-input-section" style="display: none;">
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle me-2"></i>
+                            Click "Fetch Data" to retrieve real-time parking data, then click "Predict Availability" to run the ML model.
+                        </div>
+                        <div class="text-center mb-3">
+                            <button class="btn btn-success btn-lg" onclick="fetchParkingData()">
+                                <i class="fas fa-cloud-download-alt me-2"></i>Fetch Parking Data
+                            </button>
+                        </div>
+                        <div id="parking_api_data" class="row"></div>
+                    </div>
+                    
+                    <div class="text-center mt-4">
                         <button class="btn btn-primary btn-predict" onclick="predict('parking')">
                             <i class="fas fa-car me-2"></i>PREDICT AVAILABILITY
                         </button>
                     </div>
-                    <div id="parking_result" style="display:none;"></div>
+                    <div id="parking_result" style="display:none;" class="mt-4"></div>
+                    
+                    <!-- Visualization Section -->
+                    <div id="parking_charts" class="mt-4" style="display: none;">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="card">
+                                    <div class="card-body">
+                                        <h6 class="card-title">Parking Utilization</h6>
+                                        <canvas id="parkingUtilChart"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="card">
+                                    <div class="card-body">
+                                        <h6 class="card-title">Flow Rate Analysis</h6>
+                                        <canvas id="parkingFlowChart"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- Activity Module -->
                 <div id="activity_module" class="main-card p-5" style="display:none;">
-                    <div class="d-flex align-items-center mb-4">
-                        <img src="https://images.unsplash.com/photo-1573164713714-d95e436ab8d6?w=100&h=100&fit=crop&crop=center" class="header-image me-3" alt="Citizens">
-                        <div>
-                            <h3 class="fw-bold mb-2">Citizen Activity Prediction</h3>
-                            <p class="text-muted mb-0">Monitor urban activity levels using demographic and environmental indicators</p>
+                    <div class="d-flex align-items-center justify-content-between mb-4">
+                        <div class="d-flex align-items-center">
+                            <img src="https://images.unsplash.com/photo-1573164713714-d95e436ab8d6?w=100&h=100&fit=crop&crop=center" class="header-image me-3" alt="Citizens">
+                            <div>
+                                <h3 class="fw-bold mb-2">Citizen Activity Prediction</h3>
+                                <p class="text-muted mb-0">Monitor urban activity levels using demographic and environmental indicators</p>
+                            </div>
+                        </div>
+                        <div class="btn-group" role="group">
+                            <input type="radio" class="btn-check" name="activity_mode" id="activity_manual" value="manual" checked>
+                            <label class="btn btn-outline-primary" for="activity_manual">
+                                <i class="fas fa-keyboard me-2"></i>Manual Input
+                            </label>
+                            <input type="radio" class="btn-check" name="activity_mode" id="activity_api" value="api">
+                            <label class="btn btn-outline-success" for="activity_api">
+                                <i class="fas fa-cloud-download-alt me-2"></i>Fetch from API
+                            </label>
                         </div>
                     </div>
                     
+                    <div id="activity_manual" class="data-input-section">
                     <div class="row">
                         <div class="col-md-6">
                             <div class="mb-3">
@@ -375,20 +1157,1060 @@
                             </div>
                         </div>
                     </div>
+                    </div>
                     
-                    <div class="text-center">
+                    <div id="activity_api" class="data-input-section" style="display: none;">
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle me-2"></i>
+                            Click "Fetch Data" to retrieve real-time citizen activity data, then click "Predict Activity" to run the ML model.
+                        </div>
+                        <div class="text-center mb-3">
+                            <button class="btn btn-success btn-lg" onclick="fetchActivityData()">
+                                <i class="fas fa-cloud-download-alt me-2"></i>Fetch Activity Data
+                            </button>
+                        </div>
+                        <div id="activity_api_data" class="row"></div>
+                    </div>
+                    
+                    <div class="text-center mt-4">
                         <button class="btn btn-primary btn-predict" onclick="predict('activity')">
                             <i class="fas fa-chart-bar me-2"></i>PREDICT ACTIVITY
                         </button>
                     </div>
-                    <div id="activity_result" style="display:none;"></div>
+                    <div id="activity_result" style="display:none;" class="mt-4"></div>
+                    
+                    <!-- Visualization Section -->
+                    <div id="activity_charts" class="mt-4" style="display: none;">
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="card">
+                                    <div class="card-body">
+                                        <h6 class="card-title">Activity Level Analysis</h6>
+                                        <canvas id="activityChart"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 
+    <!-- Add JavaScript libraries -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/leaflet.heat@0.2.0/dist/leaflet-heat.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
     <script>
+        // Global variables
+        let map;
+        let heatmapLayers = {};
+        let currentHeatmapLayer = null;
+        let gaugeChart = null;
+        let currentCity = null;
+        let currentCityData = null;
+        
+        // Initialize the application when the DOM is loaded
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize the map
+            initMap();
+            
+            // Initialize the gauge chart
+            initGaugeChart();
+            
+            // Load initial data
+            updateCityScore();
+            loadHeatmapData();
+            
+            // Set up auto-refresh
+            setInterval(updateCityScore, 300000); // Update every 5 minutes
+            setInterval(checkForAlerts, 60000);   // Check for alerts every minute
+            
+            // Set up layer control buttons
+            document.querySelectorAll('[data-layer]').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const layerName = this.dataset.layer;
+                    showHeatmapLayer(layerName);
+                    
+                    // Update active state
+                    document.querySelectorAll('[data-layer]').forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                });
+            });
+            
+            // Allow Enter key to trigger city search
+            document.getElementById('cityInput').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    analyzeCity();
+                }
+            });
+            
+            // Initialize dynamic navbar features
+            initDynamicNavbar();
+        });
+        
+        // Initialize Dynamic Navbar Features
+        function initDynamicNavbar() {
+            // Update live time
+            function updateLiveTime() {
+                const now = new Date();
+                const timeString = now.toLocaleTimeString('en-US', { 
+                    hour12: false,
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    second: '2-digit'
+                });
+                const timeElement = document.getElementById('liveTime');
+                if (timeElement) {
+                    timeElement.textContent = timeString;
+                }
+            }
+            
+            // Update time every second
+            updateLiveTime();
+            setInterval(updateLiveTime, 1000);
+            
+            // Navbar scroll effect
+            let lastScroll = 0;
+            window.addEventListener('scroll', function() {
+                const navbar = document.querySelector('.navbar');
+                const currentScroll = window.pageYOffset;
+                
+                if (currentScroll > 50) {
+                    navbar.classList.add('scrolled');
+                } else {
+                    navbar.classList.remove('scrolled');
+                }
+                
+                lastScroll = currentScroll;
+            });
+            
+            // Update active nav link on scroll
+            window.addEventListener('scroll', function() {
+                updateActiveNavLink();
+            });
+        }
+        
+        // Scroll to section smoothly
+        function scrollToSection(sectionId) {
+            let targetElement;
+            
+            switch(sectionId) {
+                case 'dashboard':
+                    targetElement = document.querySelector('.hero-section');
+                    break;
+                case 'predictions':
+                    targetElement = document.querySelector('.container-fluid .row');
+                    break;
+                case 'map':
+                    targetElement = document.getElementById('cityMap');
+                    break;
+                case 'alerts':
+                    targetElement = document.getElementById('alertsContainer');
+                    break;
+                default:
+                    targetElement = document.querySelector('.hero-section');
+            }
+            
+            if (targetElement) {
+                const offset = 80; // Navbar height
+                const elementPosition = targetElement.getBoundingClientRect().top;
+                const offsetPosition = elementPosition + window.pageYOffset - offset;
+                
+                window.scrollTo({
+                    top: offsetPosition,
+                    behavior: 'smooth'
+                });
+                
+                // Update active nav link
+                document.querySelectorAll('.nav-link').forEach(link => {
+                    link.classList.remove('active');
+                });
+                event.target.closest('.nav-link').classList.add('active');
+            }
+        }
+        
+        // Update active nav link based on scroll position
+        function updateActiveNavLink() {
+            const sections = ['dashboard', 'predictions', 'map', 'alerts'];
+            const scrollPos = window.pageYOffset + 100;
+            
+            sections.forEach(section => {
+                const element = document.querySelector(`[data-section="${section}"]`) || 
+                               (section === 'dashboard' ? document.querySelector('.hero-section') : null) ||
+                               (section === 'map' ? document.getElementById('cityMap') : null);
+                
+                if (element) {
+                    const top = element.offsetTop;
+                    const bottom = top + element.offsetHeight;
+                    
+                    if (scrollPos >= top && scrollPos <= bottom) {
+                        document.querySelectorAll('.nav-link').forEach(link => {
+                            link.classList.remove('active');
+                            if (link.textContent.toLowerCase().includes(section)) {
+                                link.classList.add('active');
+                            }
+                        });
+                    }
+                }
+            });
+        }
+        
+        // Initialize the map
+        function initMap() {
+            // Default to New Delhi coordinates
+            map = L.map('cityMap').setView([28.6139, 77.2090], 12);
+            
+            // Add OpenStreetMap tile layer
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            }).addTo(map);
+            
+            // Initialize heatmap layers
+            const layers = ['accident_risk', 'air_quality', 'parking', 'crowd_density'];
+            layers.forEach(layer => {
+                heatmapLayers[layer] = L.layerGroup().addTo(map);
+                if (layer !== 'accident_risk') {
+                    map.removeLayer(heatmapLayers[layer]);
+                } else {
+                    currentHeatmapLayer = layer;
+                }
+            });
+        }
+        
+        // Initialize the gauge chart
+        function initGaugeChart() {
+            const ctx = document.getElementById('gaugeChart').getContext('2d');
+            gaugeChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    datasets: [{
+                        data: [0, 100],
+                        backgroundColor: ['#3B82F6', '#E5E7EB'],
+                        borderWidth: 0,
+                        circumference: 180,
+                        rotation: 270
+                    }]
+                },
+                options: {
+                    cutout: '80%',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: { enabled: false }
+                    }
+                }
+            });
+        }
+        
+        // Update the gauge chart
+        function updateGauge(score) {
+            if (!gaugeChart) return;
+            
+            gaugeChart.data.datasets[0].data = [score, 100 - score];
+            gaugeChart.update();
+            
+            // Update score display
+            document.getElementById('cityScore').textContent = score;
+        }
+        
+        // Show a specific heatmap layer
+        function showHeatmapLayer(layerName) {
+            if (currentHeatmapLayer === layerName) return;
+            
+            if (currentHeatmapLayer) {
+                map.removeLayer(heatmapLayers[currentHeatmapLayer]);
+            }
+            
+            map.addLayer(heatmapLayers[layerName]);
+            currentHeatmapLayer = layerName;
+        }
+        
+        // Load heatmap data from the server
+        function loadHeatmapData() {
+            loadHeatmapDataForCity(null, 28.6139, 77.2090);
+        }
+        
+        // Load heatmap data for a specific city
+        function loadHeatmapDataForCity(cityName, lat, lon) {
+            let url = '/api/heatmap_data';
+            if (cityName) {
+                url += `?city=${encodeURIComponent(cityName)}`;
+            } else if (lat && lon) {
+                url += `?lat=${lat}&lon=${lon}`;
+            }
+            
+            fetch(url)
+                .then(response => response.json())
+                .then(data => {
+                    // Clear existing heatmap layers
+                    Object.keys(heatmapLayers).forEach(layer => {
+                        heatmapLayers[layer].clearLayers();
+                    });
+                    
+                    // Add new heatmap data
+                    Object.entries(data).forEach(([layer, points]) => {
+                        const heat = L.heatLayer(points, {
+                            radius: 25,
+                            blur: 15,
+                            maxZoom: 17,
+                            max: 1.0,
+                            gradient: getHeatmapGradient(layer)
+                        });
+                        
+                        heat.addTo(heatmapLayers[layer]);
+                    });
+                })
+                .catch(error => {
+                    console.error('Error loading heatmap data:', error);
+                    showAlert('Failed to load heatmap data', 'error');
+                });
+        }
+        
+        // Get appropriate gradient for each heatmap layer
+        function getHeatmapGradient(layer) {
+            switch(layer) {
+                case 'air_quality':
+                    return {0.4: 'blue', 0.6: 'cyan', 0.7: 'lime', 0.8: 'yellow', 1.0: 'red'};
+                case 'accident_risk':
+                    return {0.4: 'green', 0.6: 'yellow', 0.8: 'orange', 1.0: 'red'};
+                case 'parking':
+                    return {0.3: 'red', 0.7: 'yellow', 1.0: 'green'};
+                case 'crowd_density':
+                    return {0.3: 'blue', 0.6: 'purple', 1.0: 'red'};
+                default:
+                    return {0.4: 'blue', 0.6: 'cyan', 0.7: 'lime', 0.8: 'yellow', 1.0: 'red'};
+            }
+        }
+        
+        // Handle mode switching for modules
+        document.addEventListener('DOMContentLoaded', function() {
+            // Air Quality Mode Toggle
+            document.querySelectorAll('input[name="air_quality_mode"]').forEach(radio => {
+                radio.addEventListener('change', function() {
+                    if (this.value === 'manual') {
+                        document.getElementById('air_quality_manual').style.display = 'block';
+                        document.getElementById('air_quality_api').style.display = 'none';
+                    } else {
+                        document.getElementById('air_quality_manual').style.display = 'none';
+                        document.getElementById('air_quality_api').style.display = 'block';
+                    }
+                });
+            });
+            
+            // Accident Mode Toggle
+            document.querySelectorAll('input[name="accident_mode"]').forEach(radio => {
+                radio.addEventListener('change', function() {
+                    if (this.value === 'manual') {
+                        document.getElementById('accident_manual').style.display = 'block';
+                        document.getElementById('accident_api').style.display = 'none';
+                    } else {
+                        document.getElementById('accident_manual').style.display = 'none';
+                        document.getElementById('accident_api').style.display = 'block';
+                    }
+                });
+            });
+            
+            // Parking Mode Toggle
+            document.querySelectorAll('input[name="parking_mode"]').forEach(radio => {
+                radio.addEventListener('change', function() {
+                    if (this.value === 'manual') {
+                        document.getElementById('parking_manual').style.display = 'block';
+                        document.getElementById('parking_api').style.display = 'none';
+                    } else {
+                        document.getElementById('parking_manual').style.display = 'none';
+                        document.getElementById('parking_api').style.display = 'block';
+                    }
+                });
+            });
+            
+            // Activity Mode Toggle
+            document.querySelectorAll('input[name="activity_mode"]').forEach(radio => {
+                radio.addEventListener('change', function() {
+                    if (this.value === 'manual') {
+                        document.getElementById('activity_manual').style.display = 'block';
+                        document.getElementById('activity_api').style.display = 'none';
+                    } else {
+                        document.getElementById('activity_manual').style.display = 'none';
+                        document.getElementById('activity_api').style.display = 'block';
+                    }
+                });
+            });
+        });
+        
+        // Fetch Air Quality Data from API
+        function fetchAirQualityData() {
+            const cityName = document.getElementById('cityInput').value || currentCity;
+            if (!cityName) {
+                showAlert('Please select a city first', 'warning');
+                return;
+            }
+            
+            showAlert('Fetching air quality data...', 'info');
+            
+            // Get coordinates from current city data or use city name
+            let lat = null, lon = null;
+            if (currentCityData && currentCityData.location) {
+                lat = currentCityData.location.lat;
+                lon = currentCityData.location.lon;
+            }
+            
+            let url = `/api/fetch_data?module=air_quality&city=${encodeURIComponent(cityName)}`;
+            if (lat && lon) {
+                url += `&lat=${lat}&lon=${lon}`;
+            }
+            
+            fetch(url)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        const apiData = data.data;
+                        // Populate form fields
+                        document.getElementById('pm25').value = apiData.pm25 || '';
+                        document.getElementById('pm10').value = apiData.pm10 || '';
+                        document.getElementById('no2').value = apiData.no2 || '';
+                        document.getElementById('co').value = apiData.co || '';
+                        document.getElementById('so2').value = apiData.so2 || '';
+                        document.getElementById('temperature').value = apiData.temperature || '';
+                        document.getElementById('humidity').value = apiData.humidity || '';
+                        document.getElementById('wind_speed').value = apiData.wind_speed || '';
+                        
+                        // Display fetched data
+                        const container = document.getElementById('air_quality_api_data');
+                        container.innerHTML = `
+                            <div class="col-12">
+                                <div class="alert alert-success">
+                                    <h6><i class="fas fa-check-circle me-2"></i>Data Fetched Successfully</h6>
+                                    <p class="mb-0"><strong>Source:</strong> ${apiData.source || 'API'}</p>
+                                    ${apiData.aqi ? `<p class="mb-0"><strong>Current AQI:</strong> ${apiData.aqi}</p>` : ''}
+                                </div>
+                            </div>
+                        `;
+                        
+                        showAlert('Air quality data fetched successfully!', 'success');
+                    } else {
+                        showAlert(data.error || 'Failed to fetch data', 'error');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error fetching air quality data:', error);
+                    showAlert('Failed to fetch air quality data', 'error');
+                });
+        }
+        
+        // Fetch Accident Data from API
+        function fetchAccidentData() {
+            const cityName = document.getElementById('cityInput').value || currentCity;
+            if (!cityName) {
+                showAlert('Please select a city first', 'warning');
+                return;
+            }
+            
+            showAlert('Fetching traffic and weather data...', 'info');
+            
+            // Get coordinates from current city data or use city name
+            let lat = null, lon = null;
+            if (currentCityData && currentCityData.location) {
+                lat = currentCityData.location.lat;
+                lon = currentCityData.location.lon;
+            }
+            
+            let url = `/api/fetch_data?module=accident&city=${encodeURIComponent(cityName)}`;
+            if (lat && lon) {
+                url += `&lat=${lat}&lon=${lon}`;
+            }
+            
+            fetch(url)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        const apiData = data.data;
+                        // Populate form fields
+                        document.getElementById('vehicle_density').value = apiData.vehicle_density || '';
+                        document.getElementById('avg_speed').value = apiData.avg_speed || '';
+                        document.getElementById('visibility').value = (apiData.visibility || 0) * 1000; // Convert to meters
+                        document.getElementById('weather_condition').value = apiData.weather_condition || 0;
+                        
+                        // Display fetched data
+                        const container = document.getElementById('accident_api_data');
+                        container.innerHTML = `
+                            <div class="col-12">
+                                <div class="alert alert-success">
+                                    <h6><i class="fas fa-check-circle me-2"></i>Data Fetched Successfully</h6>
+                                    <p class="mb-0"><strong>Source:</strong> ${apiData.source || 'API'}</p>
+                                    ${apiData.weather_description ? `<p class="mb-0"><strong>Weather:</strong> ${apiData.weather_description}</p>` : ''}
+                                </div>
+                            </div>
+                        `;
+                        
+                        showAlert('Traffic and weather data fetched successfully!', 'success');
+                    } else {
+                        showAlert(data.error || 'Failed to fetch data', 'error');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error fetching accident data:', error);
+                    showAlert('Failed to fetch traffic data', 'error');
+                });
+        }
+        
+        // Fetch Parking Data from API
+        function fetchParkingData() {
+            const cityName = document.getElementById('cityInput').value || currentCity;
+            if (!cityName) {
+                showAlert('Please select a city first', 'warning');
+                return;
+            }
+            
+            showAlert('Fetching parking data...', 'info');
+            
+            // Get coordinates from current city data or use city name
+            let lat = null, lon = null;
+            if (currentCityData && currentCityData.location) {
+                lat = currentCityData.location.lat;
+                lon = currentCityData.location.lon;
+            }
+            
+            let url = `/api/fetch_data?module=parking&city=${encodeURIComponent(cityName)}`;
+            if (lat && lon) {
+                url += `&lat=${lat}&lon=${lon}`;
+            }
+            
+            fetch(url)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        const apiData = data.data;
+                        // Populate form fields
+                        document.getElementById('parking_capacity').value = apiData.parking_capacity || '';
+                        document.getElementById('occupied_slots').value = apiData.occupied_slots || '';
+                        document.getElementById('entry_rate').value = apiData.entry_rate || '';
+                        document.getElementById('exit_rate').value = apiData.exit_rate || '';
+                        
+                        // Display fetched data
+                        const container = document.getElementById('parking_api_data');
+                        container.innerHTML = `
+                            <div class="col-12">
+                                <div class="alert alert-success">
+                                    <h6><i class="fas fa-check-circle me-2"></i>Data Fetched Successfully</h6>
+                                    <p class="mb-0"><strong>Source:</strong> ${apiData.source || 'API'}</p>
+                                </div>
+                            </div>
+                        `;
+                        
+                        showAlert('Parking data fetched successfully!', 'success');
+                    } else {
+                        showAlert(data.error || 'Failed to fetch data', 'error');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error fetching parking data:', error);
+                    showAlert('Failed to fetch parking data', 'error');
+                });
+        }
+        
+        // Fetch Activity Data from API
+        function fetchActivityData() {
+            const cityName = document.getElementById('cityInput').value || currentCity;
+            if (!cityName) {
+                showAlert('Please select a city first', 'warning');
+                return;
+            }
+            
+            showAlert('Fetching activity data...', 'info');
+            
+            // Get coordinates from current city data or use city name
+            let lat = null, lon = null;
+            if (currentCityData && currentCityData.location) {
+                lat = currentCityData.location.lat;
+                lon = currentCityData.location.lon;
+            }
+            
+            let url = `/api/fetch_data?module=activity&city=${encodeURIComponent(cityName)}`;
+            if (lat && lon) {
+                url += `&lat=${lat}&lon=${lon}`;
+            }
+            
+            fetch(url)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        const apiData = data.data;
+                        // Populate form fields
+                        document.getElementById('population_density').value = apiData.population_density || '';
+                        document.getElementById('avg_age').value = apiData.avg_age || '';
+                        document.getElementById('workplace_count').value = apiData.workplace_count || '';
+                        document.getElementById('public_events').value = apiData.public_events || '';
+                        
+                        // Display fetched data
+                        const container = document.getElementById('activity_api_data');
+                        container.innerHTML = `
+                            <div class="col-12">
+                                <div class="alert alert-success">
+                                    <h6><i class="fas fa-check-circle me-2"></i>Data Fetched Successfully</h6>
+                                    <p class="mb-0"><strong>Source:</strong> ${apiData.source || 'API'}</p>
+                                </div>
+                            </div>
+                        `;
+                        
+                        showAlert('Activity data fetched successfully!', 'success');
+                    } else {
+                        showAlert(data.error || 'Failed to fetch data', 'error');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error fetching activity data:', error);
+                    showAlert('Failed to fetch activity data', 'error');
+                });
+        }
+        
+        // Analyze city - run all models and get predictions
+        function analyzeCity() {
+            const cityName = document.getElementById('cityInput').value.trim();
+            if (!cityName) {
+                showAlert('Please select a city', 'warning');
+                return;
+            }
+            
+            showAlert(`Analyzing ${cityName}...`, 'info');
+            
+            // Use API data by default
+            fetch(`/api/city/predict?city=${encodeURIComponent(cityName)}&use_api=true`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.error) {
+                        showAlert(data.error, 'error');
+                        return;
+                    }
+                    
+                    currentCity = cityName;
+                    currentCityData = data;
+                    
+                    // Update city info
+                    document.getElementById('currentCityName').textContent = data.city;
+                    document.getElementById('currentCityCoords').textContent = 
+                        `(${data.location.lat.toFixed(4)}, ${data.location.lon.toFixed(4)})`;
+                    document.getElementById('cityInfo').style.display = 'block';
+                    
+                    // Update navbar city status
+                    const cityStatusNav = document.getElementById('cityStatusNav');
+                    const currentCityNav = document.getElementById('currentCityNav');
+                    if (cityStatusNav && currentCityNav) {
+                        currentCityNav.textContent = data.city;
+                        cityStatusNav.style.display = 'flex';
+                    }
+                    
+                    // Update map center
+                    map.setView([data.location.lat, data.location.lon], 12);
+                    
+                    // Update score and metrics
+                    updateCityScoreForCity(data);
+                    
+                    // Update heatmap
+                    loadHeatmapDataForCity(cityName, data.location.lat, data.location.lon);
+                    
+                    // Show recommendations
+                    displayRecommendations(data.insights);
+                    
+                    // Show alerts
+                    if (data.alerts && data.alerts.length > 0) {
+                        data.alerts.forEach(alert => {
+                            showAlert(alert.message, alert.type);
+                        });
+                    }
+                    
+                    showAlert(`Analysis complete for ${data.city}`, 'success');
+                })
+                .catch(error => {
+                    console.error('Error analyzing city:', error);
+                    showAlert('Failed to analyze city. Please try again.', 'error');
+                });
+        }
+        
+        // Auto-detect location
+        function detectLocation() {
+            if (!navigator.geolocation) {
+                showAlert('Geolocation is not supported by your browser', 'error');
+                return;
+            }
+            
+            showAlert('Detecting your location...', 'info');
+            
+            navigator.geolocation.getCurrentPosition(
+                function(position) {
+                    const lat = position.coords.latitude;
+                    const lon = position.coords.longitude;
+                    
+                    fetch(`/api/city/predict?lat=${lat}&lon=${lon}`)
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.error) {
+                                showAlert(data.error, 'error');
+                                return;
+                            }
+                            
+                            currentCity = data.city;
+                            currentCityData = data;
+                            
+                            // Update city input
+                            document.getElementById('cityInput').value = data.city;
+                            
+                            // Update city info
+                            document.getElementById('currentCityName').textContent = data.city;
+                            document.getElementById('currentCityCoords').textContent = 
+                                `(${data.location.lat.toFixed(4)}, ${data.location.lon.toFixed(4)})`;
+                            document.getElementById('cityInfo').style.display = 'block';
+                            
+                            // Update map center
+                            map.setView([data.location.lat, data.location.lon], 12);
+                            
+                            // Update score and metrics
+                            updateCityScoreForCity(data);
+                            
+                            // Update heatmap
+                            loadHeatmapDataForCity(data.city, data.location.lat, data.location.lon);
+                            
+                            // Show recommendations
+                            displayRecommendations(data.insights);
+                            
+                            // Show alerts
+                            if (data.alerts && data.alerts.length > 0) {
+                                data.alerts.forEach(alert => {
+                                    showAlert(alert.message, alert.type);
+                                });
+                            }
+                            
+                            showAlert(`Location detected: ${data.city}`, 'success');
+                        })
+                        .catch(error => {
+                            console.error('Error detecting location:', error);
+                            showAlert('Failed to detect location. Please enter city manually.', 'error');
+                        });
+                },
+                function(error) {
+                    showAlert('Could not detect your location. Please enter city manually.', 'warning');
+                }
+            );
+        }
+        
+        // Update city score for a specific city
+        function updateCityScoreForCity(data) {
+            // Update the gauge
+            updateGauge(data.score);
+            
+            // Update the status badge
+            const status = data.status;
+            const statusBadge = document.getElementById('statusBadge');
+            statusBadge.textContent = status.status;
+            statusBadge.className = 'gauge-status';
+            statusBadge.style.backgroundColor = status.color;
+            statusBadge.style.color = 'white';
+            
+            // Update last updated time
+            const lastUpdated = new Date(data.last_updated);
+            document.getElementById('lastUpdated').textContent = 
+                `Last updated: ${lastUpdated.toLocaleString()}`;
+            
+            // Update metrics
+            updateMetric('airQualityMetric', {
+                value: data.metrics.air_quality,
+                label: 'AQI',
+                color: getAqiColor(data.metrics.air_quality)
+            });
+            
+            updateMetric('accidentRiskMetric', {
+                value: data.metrics.accident_risk,
+                color: data.metrics.accident_risk === 'High' ? '#EF4444' : 
+                       data.metrics.accident_risk === 'Medium' ? '#F59E0B' : '#10B981'
+            });
+            
+            updateMetric('parkingMetric', {
+                value: data.metrics.parking_status,
+                color: data.metrics.parking_status === 'Available' ? '#10B981' : '#EF4444'
+            });
+            
+            updateMetric('activityMetric', {
+                value: data.metrics.activity_level,
+                color: data.metrics.activity_level === 'High' ? '#10B981' : 
+                       data.metrics.activity_level === 'Moderate' ? '#F59E0B' : '#6B7280'
+            });
+        }
+        
+        // Display recommendations
+        function displayRecommendations(insights) {
+            const panel = document.getElementById('recommendationsPanel');
+            const content = document.getElementById('recommendationsContent');
+            
+            if (!insights) {
+                panel.style.display = 'none';
+                return;
+            }
+            
+            let html = `
+                <div class="mb-3">
+                    <p class="mb-2"><strong>Overview:</strong> ${insights.overview}</p>
+                </div>
+            `;
+            
+            if (insights.strengths && insights.strengths.length > 0) {
+                html += `
+                    <div class="mb-3">
+                        <h6 class="text-success"><i class="fas fa-check-circle me-2"></i>Strengths</h6>
+                        <ul class="list-unstyled ms-3">
+                            ${insights.strengths.map(s => `<li class="text-success">✓ ${s}</li>`).join('')}
+                        </ul>
+                    </div>
+                `;
+            }
+            
+            if (insights.concerns && insights.concerns.length > 0) {
+                html += `
+                    <div class="mb-3">
+                        <h6 class="text-warning"><i class="fas fa-exclamation-triangle me-2"></i>Concerns</h6>
+                        <ul class="list-unstyled ms-3">
+                            ${insights.concerns.map(c => `<li class="text-warning">⚠ ${c}</li>`).join('')}
+                        </ul>
+                    </div>
+                `;
+            }
+            
+            if (insights.recommendations && insights.recommendations.length > 0) {
+                html += `
+                    <div class="mb-3">
+                        <h6 class="text-primary"><i class="fas fa-lightbulb me-2"></i>Recommendations</h6>
+                        <div class="ms-3">
+                            ${insights.recommendations.map(r => `<div class="text-muted mb-2">${r.replace(/\n/g, '<br>')}</div>`).join('')}
+                        </div>
+                    </div>
+                `;
+            }
+            
+            content.innerHTML = html;
+            panel.style.display = 'block';
+        }
+        
+        // Update the city score and metrics
+        function updateCityScore() {
+            const url = currentCity ? `/api/city_score?city=${encodeURIComponent(currentCity)}` : '/api/city_score';
+            
+            fetch(url)
+                .then(response => response.json())
+                .then(data => {
+                    // Update the gauge
+                    updateGauge(data.score);
+                    
+                    // Update the status badge
+                    const status = data.status;
+                    const statusBadge = document.getElementById('statusBadge');
+                    statusBadge.textContent = status.status;
+                    statusBadge.className = 'gauge-status';
+                    statusBadge.style.backgroundColor = status.color;
+                    statusBadge.style.color = 'white';
+                    
+                    // Update last updated time
+                    document.getElementById('lastUpdated').textContent = `Last updated: ${new Date().toLocaleTimeString()}`;
+                    
+                    // Update metrics
+                    updateMetric('airQualityMetric', {
+                        value: data.metrics.air_quality,
+                        label: 'AQI',
+                        color: getAqiColor(data.metrics.air_quality)
+                    });
+                    
+                    updateMetric('accidentRiskMetric', {
+                        value: data.metrics.accident_risk,
+                        color: data.metrics.accident_risk === 'High' ? '#EF4444' : 
+                               data.metrics.accident_risk === 'Medium' ? '#F59E0B' : '#10B981'
+                    });
+                    
+                    updateMetric('parkingMetric', {
+                        value: data.metrics.parking_status,
+                        color: data.metrics.parking_status === 'Available' ? '#10B981' : '#EF4444'
+                    });
+                    
+                    updateMetric('activityMetric', {
+                        value: data.metrics.activity_level,
+                        color: data.metrics.activity_level === 'High' ? '#10B981' : 
+                               data.metrics.activity_level === 'Moderate' ? '#F59E0B' : '#6B7280'
+                    });
+                    
+                    // Check for alerts
+                    if (currentCity) {
+                        checkForAlerts();
+                    }
+                })
+                .catch(error => {
+                    console.error('Error updating city score:', error);
+                    showAlert('Failed to update city score', 'error');
+                });
+        }
+        
+        // Update a metric card
+        function updateMetric(id, { value, label, color }) {
+            const element = document.getElementById(id);
+            if (!element) return;
+            
+            element.innerHTML = `
+                <div class="metric-value" style="color: ${color};">${value}</div>
+                ${label ? `<div class="metric-label">${label}</div>` : ''}
+                <div class="progress mt-2" style="height: 5px;">
+                    <div class="progress-bar" role="progressbar" 
+                         style="width: ${getMetricWidth(value, label)}%; 
+                                background-color: ${color};">
+                    </div>
+                </div>
+            `;
+        }
+        
+        // Get width for progress bar based on metric value
+        function getMetricWidth(value, label) {
+            if (typeof value === 'number') {
+                return Math.min(100, value / 5); // For AQI (0-500 scale)
+            }
+            
+            switch(value) {
+                case 'High': return 100;
+                case 'Medium': return 66;
+                case 'Low': return 33;
+                case 'Available': return 100;
+                case 'Full': return 30;
+                default: return 50;
+            }
+        }
+        
+        // Get AQI color
+        function getAqiColor(aqi) {
+            if (aqi <= 50) return '#10B981';      // Good
+            if (aqi <= 100) return '#F59E0B';     // Moderate
+            if (aqi <= 150) return '#F97316';     // Unhealthy for Sensitive Groups
+            if (aqi <= 200) return '#EF4444';     // Unhealthy
+            if (aqi <= 300) return '#8B5CF6';     // Very Unhealthy
+            return '#7F1D1D';                     // Hazardous
+        }
+        
+        // Show a toast notification
+        function showAlert(message, type = 'info') {
+            const colors = {
+                info: '#3B82F6',
+                success: '#10B981',
+                warning: '#F59E0B',
+                error: '#EF4444'
+            };
+            
+            Toastify({
+                text: message,
+                duration: 5000,
+                gravity: 'top',
+                position: 'right',
+                backgroundColor: colors[type] || colors.info,
+                stopOnFocus: true
+            }).showToast();
+            
+            // Also add to alerts panel
+            addAlertToPanel(message, type);
+        }
+        
+        // Add alert to the alerts panel
+        function addAlertToPanel(message, type = 'info') {
+            const alertsContainer = document.getElementById('alertsContainer');
+            const noAlertsMessage = document.getElementById('noAlertsMessage');
+            
+            // Hide "no alerts" message if it's the first alert
+            if (noAlertsMessage) {
+                noAlertsMessage.style.display = 'none';
+            }
+            
+            const alertTypes = {
+                info: { icon: 'info-circle', color: '#3B82F6' },
+                success: { icon: 'check-circle', color: '#10B981' },
+                warning: { icon: 'exclamation-triangle', color: '#F59E0B' },
+                error: { icon: 'exclamation-circle', color: '#EF4444' }
+            };
+            
+            const alertType = alertTypes[type] || alertTypes.info;
+            
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `alert-item ${type}`;
+            
+            alertDiv.innerHTML = `
+                <div class="alert-icon" style="color: ${alertType.color};">
+                    <i class="fas fa-${alertType.icon}"></i>
+                </div>
+                <div class="alert-content">
+                    <div>${message}</div>
+                    <div class="alert-time">${new Date().toLocaleTimeString()}</div>
+                </div>
+            `;
+            
+            // Add to the top of the container
+            if (alertsContainer.firstChild) {
+                alertsContainer.insertBefore(alertDiv, alertsContainer.firstChild);
+            } else {
+                alertsContainer.appendChild(alertDiv);
+            }
+            
+            // Limit the number of alerts to show
+            const maxAlerts = 10;
+            while (alertsContainer.children.length > maxAlerts) {
+                alertsContainer.removeChild(alertsContainer.lastChild);
+            }
+            
+            // Show the alerts container if it was hidden
+            alertsContainer.style.display = 'block';
+            
+            // Update alert badge in navbar
+            updateAlertBadge();
+        }
+        
+        // Update alert badge count in navbar
+        function updateAlertBadge() {
+            const alertsContainer = document.getElementById('alertsContainer');
+            const alertBadge = document.getElementById('alertBadge');
+            
+            if (alertsContainer && alertBadge) {
+                const alertCount = alertsContainer.querySelectorAll('.alert-item').length;
+                if (alertCount > 0) {
+                    alertBadge.textContent = alertCount > 99 ? '99+' : alertCount;
+                    alertBadge.style.display = 'inline-block';
+                } else {
+                    alertBadge.style.display = 'none';
+                }
+            }
+        }
+        
+        // Clear all alerts
+        function clearAlerts() {
+            const alertsContainer = document.getElementById('alertsContainer');
+            alertsContainer.innerHTML = `
+                <div class="text-center text-muted py-3" id="noAlertsMessage">
+                    No active alerts
+                </div>
+            `;
+            updateAlertBadge();
+        }
+        
+        // Check for alerts from the server
+        function checkForAlerts() {
+            if (!currentCity) return;
+            
+            fetch(`/api/alerts?city=${encodeURIComponent(currentCity)}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.alerts && data.alerts.length > 0) {
+                        // Only show new alerts (in production, track shown alerts)
+                        data.alerts.forEach(alert => {
+                            // Check if this alert should be shown
+                            // In production, you'd track which alerts have been shown
+                            showAlert(alert.message, alert.type);
+                        });
+                    }
+                })
+                .catch(error => {
+                    console.error('Error checking alerts:', error);
+                });
+        }
         // Auto-rotate hero card
         setInterval(() => {
             document.getElementById('rotatingCard').classList.toggle('flipped');
@@ -405,6 +2227,14 @@
             document.querySelectorAll('.menu-item').forEach(el => el.classList.remove('active'));
             document.getElementById('menu-' + module).classList.add('active');
         }
+        
+        // Chart instances
+        let airQualityChart = null;
+        let airPollutantChart = null;
+        let accidentRiskChart = null;
+        let parkingUtilChart = null;
+        let parkingFlowChart = null;
+        let activityChart = null;
         
         function predict(module) {
             let data = { module: module };
@@ -474,12 +2304,43 @@
                         else if (aqi <= 150) { className += 'result-moderate'; icon = '🟡'; }
                         else { className += 'result-high'; icon = '🔴'; }
                         resultDiv.innerHTML = `${icon} <strong>Predicted AQI: ${aqi}</strong>`;
-                    } else {
+                        
+                        // Show charts
+                        if (result.inputs) {
+                            renderAirQualityCharts(result.prediction, result.inputs);
+                        }
+                    } else if (module === 'accident') {
                         const pred = result.prediction;
-                        if (pred === 'Low' || pred === 'Available') { className += 'result-safe'; icon = '🟢'; }
-                        else if (pred === 'Medium' || pred === 'Moderate') { className += 'result-moderate'; icon = '🟡'; }
+                        if (pred === 'Low') { className += 'result-safe'; icon = '🟢'; }
+                        else if (pred === 'Medium') { className += 'result-moderate'; icon = '🟡'; }
+                        else { className += 'result-high'; icon = '🔴'; }
+                        resultDiv.innerHTML = `${icon} <strong>Prediction: ${pred} Risk</strong>`;
+                        
+                        // Show charts
+                        if (result.inputs) {
+                            renderAccidentCharts(result.prediction, result.inputs);
+                        }
+                    } else if (module === 'parking') {
+                        const pred = result.prediction;
+                        if (pred === 'Available') { className += 'result-safe'; icon = '🟢'; }
                         else { className += 'result-high'; icon = '🔴'; }
                         resultDiv.innerHTML = `${icon} <strong>Prediction: ${pred}</strong>`;
+                        
+                        // Show charts
+                        if (result.inputs) {
+                            renderParkingCharts(result.prediction, result.inputs);
+                        }
+                    } else if (module === 'activity') {
+                        const pred = result.prediction;
+                        if (pred === 'Low') { className += 'result-safe'; icon = '🟢'; }
+                        else if (pred === 'Moderate') { className += 'result-moderate'; icon = '🟡'; }
+                        else { className += 'result-high'; icon = '🔴'; }
+                        resultDiv.innerHTML = `${icon} <strong>Prediction: ${pred} Activity</strong>`;
+                        
+                        // Show charts
+                        if (result.inputs) {
+                            renderActivityCharts(result.prediction, result.inputs);
+                        }
                     }
                     resultDiv.className = className;
                 } else {
@@ -492,6 +2353,198 @@
                 resultDiv.style.display = 'block';
                 resultDiv.className = 'result-card result-high';
                 resultDiv.innerHTML = `🔴 <strong>Error: ${error.message}</strong>`;
+            });
+        }
+        
+        // Render Air Quality Charts
+        function renderAirQualityCharts(aqi, inputs) {
+            const chartSection = document.getElementById('air_quality_charts');
+            chartSection.style.display = 'block';
+            
+            // AQI Gauge Chart
+            const aqiCtx = document.getElementById('airQualityChart');
+            if (airQualityChart) airQualityChart.destroy();
+            airQualityChart = new Chart(aqiCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['AQI', 'Remaining'],
+                    datasets: [{
+                        data: [aqi, Math.max(0, 500 - aqi)],
+                        backgroundColor: [
+                            getAqiColor(aqi),
+                            '#E5E7EB'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: { display: false },
+                        title: { display: true, text: `AQI: ${aqi}` }
+                    }
+                }
+            });
+            
+            // Pollutant Breakdown
+            const pollutantCtx = document.getElementById('airPollutantChart');
+            if (airPollutantChart) airPollutantChart.destroy();
+            airPollutantChart = new Chart(pollutantCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['PM2.5', 'PM10', 'NO2', 'CO', 'SO2'],
+                    datasets: [{
+                        label: 'Concentration',
+                        data: [
+                            inputs.pm25,
+                            inputs.pm10,
+                            inputs.no2,
+                            inputs.co * 100, // Scale CO for visibility
+                            inputs.so2
+                        ],
+                        backgroundColor: [
+                            '#EF4444', '#F59E0B', '#3B82F6', '#10B981', '#8B5CF6'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        y: { beginAtZero: true }
+                    }
+                }
+            });
+        }
+        
+        // Render Accident Risk Charts
+        function renderAccidentCharts(risk, inputs) {
+            const chartSection = document.getElementById('accident_charts');
+            chartSection.style.display = 'block';
+            
+            const ctx = document.getElementById('accidentRiskChart');
+            if (accidentRiskChart) accidentRiskChart.destroy();
+            
+            const riskColors = { 'Low': '#10B981', 'Medium': '#F59E0B', 'High': '#EF4444' };
+            
+            accidentRiskChart = new Chart(ctx, {
+                type: 'radar',
+                data: {
+                    labels: ['Vehicle Density', 'Speed', 'Road Condition', 'Weather', 'Visibility'],
+                    datasets: [{
+                        label: 'Risk Factors',
+                        data: [
+                            inputs.vehicle_density / 5,
+                            inputs.avg_speed,
+                            (inputs.road_condition + 1) * 30,
+                            (inputs.weather_condition + 1) * 30,
+                            inputs.visibility / 10
+                        ],
+                        backgroundColor: riskColors[risk] + '40',
+                        borderColor: riskColors[risk],
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: { display: false },
+                        title: { display: true, text: `Risk Level: ${risk}` }
+                    },
+                    scales: {
+                        r: { beginAtZero: true, max: 100 }
+                    }
+                }
+            });
+        }
+        
+        // Render Parking Charts
+        function renderParkingCharts(status, inputs) {
+            const chartSection = document.getElementById('parking_charts');
+            chartSection.style.display = 'block';
+            
+            // Utilization Chart
+            const utilCtx = document.getElementById('parkingUtilChart');
+            if (parkingUtilChart) parkingUtilChart.destroy();
+            parkingUtilChart = new Chart(utilCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Occupied', 'Available'],
+                    datasets: [{
+                        data: [inputs.occupied_slots, inputs.parking_capacity - inputs.occupied_slots],
+                        backgroundColor: ['#EF4444', '#10B981']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: { position: 'bottom' }
+                    }
+                }
+            });
+            
+            // Flow Chart
+            const flowCtx = document.getElementById('parkingFlowChart');
+            if (parkingFlowChart) parkingFlowChart.destroy();
+            parkingFlowChart = new Chart(flowCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['Entry Rate', 'Exit Rate'],
+                    datasets: [{
+                        label: 'Vehicles per hour',
+                        data: [inputs.entry_rate, inputs.exit_rate],
+                        backgroundColor: ['#3B82F6', '#10B981']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        y: { beginAtZero: true }
+                    }
+                }
+            });
+        }
+        
+        // Render Activity Charts
+        function renderActivityCharts(activity, inputs) {
+            const chartSection = document.getElementById('activity_charts');
+            chartSection.style.display = 'block';
+            
+            const ctx = document.getElementById('activityChart');
+            if (activityChart) activityChart.destroy();
+            
+            activityChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ['Population Density', 'Workplaces', 'Public Events', 'Temperature'],
+                    datasets: [{
+                        label: 'Activity Indicators',
+                        data: [
+                            inputs.population_density / 100,
+                            inputs.workplace_count * 2,
+                            inputs.public_events * 20,
+                            inputs.temperature * 2
+                        ],
+                        borderColor: '#8B5CF6',
+                        backgroundColor: '#8B5CF640',
+                        tension: 0.4,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: { display: false },
+                        title: { display: true, text: `Activity Level: ${activity}` }
+                    },
+                    scales: {
+                        y: { beginAtZero: true }
+                    }
+                }
             });
         }
     </script>

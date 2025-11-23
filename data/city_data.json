@@ -1,0 +1,38 @@
+{
+  "New Delhi": {
+    "air_quality": 243.9,
+    "accident_risk": "Low",
+    "parking_status": "Full",
+    "activity_level": "High",
+    "energy_consumption": 1459.18797511924,
+    "traffic_congestion": 0.345490644934168,
+    "last_updated": "2025-11-23T16:09:35.161303"
+  },
+  "Bangalore": {
+    "air_quality": 124.8,
+    "accident_risk": "Low",
+    "parking_status": "Available",
+    "activity_level": "Moderate",
+    "energy_consumption": 1917.3698510574804,
+    "traffic_congestion": 0.42885612557704234,
+    "last_updated": "2025-11-23T16:08:26.669843"
+  },
+  "Hyderabad": {
+    "air_quality": 96.3,
+    "accident_risk": "Low",
+    "parking_status": "Available",
+    "activity_level": "Moderate",
+    "energy_consumption": 1099.1539630298414,
+    "traffic_congestion": 0.1916390632825829,
+    "last_updated": "2025-11-23T16:09:09.004100"
+  },
+  "Chennai": {
+    "air_quality": 115.4,
+    "accident_risk": "Low",
+    "parking_status": "Available",
+    "activity_level": "Moderate",
+    "energy_consumption": 4397.683019071853,
+    "traffic_congestion": 0.7995304019429992,
+    "last_updated": "2025-11-23T16:09:30.129578"
+  }
+}
