@@ -9,7 +9,6 @@ import random
 
 class APIService:
     """Service for fetching data from external APIs"""
-    
     def __init__(self):
         # API Keys - In production, these should be in environment variables
         # For demo, we'll use free/public APIs or simulate data
