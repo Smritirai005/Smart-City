@@ -65,14 +65,11 @@ generate new ones, and run prediction or service modules that resemble real-worl
 ├── smart_city_results.png # Output snapshot
 ├── requirements.txt
 
-yaml
-Copy code
 
----
 
 ## 🚀 Installation & Setup
 
-1. **Clone the repository**
+1. Clone the repository
    ```bash
    git clone https://github.com/Smritirai005/Smart-City.git
    cd Smart-City
